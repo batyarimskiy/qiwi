@@ -88,7 +88,7 @@ while True:
             comment = input('Коментарий к переводу (нажмите ENTER, чтобы пропустить): ')
 
             qiwi.api.pay(account=number, amount=money, comment=comment)
-            print('Перевод выполнен!')
+            print('Перевод выполнен !')
 
         if ch == 3:
             token = input("Введите токен от QIWI: ")
