@@ -12,7 +12,7 @@ intro = """
 | |_| | |\ V  V /| |
  \__\_\_| \_/\_/ |_|
 
-      by @batyarimskiy  v.1
+      by @batyarimskiy  v.1.1
  """
 print(intro)
 
@@ -24,17 +24,32 @@ menu = """
 2. Перевести деньги
 """
 
-def pay():
-    api = QApi(token=token, phone=phone)
-    print(api.balance)
-    api.pay(account="ТЕЛЕФОН ПОЛУЧАТЕЛЯ", amount=1, comment='Привет мир!')
-    print(api.balance)
-
 def balans():
     api = QApi(token=token, phone=phone)
     print('Ваш баланс')
     print(api.balance)
-    print('вы нириально багат!')                                                                
+    print('вы нириально багат!')
+    print("""
+
+Чтобы выйти в главное меню нажмите Enter:
+    """)
+    input()
+
+def pay():
+    api = QApi(token=token, phone=phone)
+    print('ваш баланс')
+    print(api.balance)
+    pay=input('Номер получателя: ')
+    sym=input('Сумма перевода: ')
+    com=input('Коментарий к переводу: ')
+    api.pay(account=pay, amount=sym, comment=com)
+    print(api.balance)
+    print("""
+
+Чтобы выйти в главное меню нажмите Enter:
+    """)
+    input()
+
 def main():
     os.system(clear)
     print(intro)
