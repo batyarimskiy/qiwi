@@ -1,64 +1,114 @@
 import os
-from SimpleQIWI import *
+import sys
+import random
 
-clear = ('clear')
+from modules import misc
+from modules.qiwi_wrapper import QiwiWrapper
+from modules.db_wrapper import DataBaseWrapper
 
-os.system(clear)
+db = DataBaseWrapper("accounts.db")
+accounts = db.get_accounts()
 
-intro = """
-  ___  _          _
- / _ \(_)_      _(_)
-| | | | \ \ /\ / / |
-| |_| | |\ V  V /| |
- \__\_\_| \_/\_/ |_|
+misc.print_banner( len(accounts) )
 
-      by @batyarimskiy  v.1.1
- """
-print(intro)
+proxy = input("Использовать прокси? (Y/n) ")
+print()
 
-token=input('Введите токен: ')
-phone=input('Введите номер: ');
+if proxy == "y":
+    if os.path.exists("proxy.txt"):
+        with open("proxy.txt", "r") as f:
+            proxies = f.read()
 
-menu = """
-1. Баланс
-2. Перевести деньги
-"""
+            if not proxies:
+                print("Заполните файл proxies.txt")
+                sys.exit()
+            else:
+                proxies = proxies.split("\n")
 
-def balans():
-    api = QApi(token=token, phone=phone)
-    print('Ваш баланс')
-    print(api.balance)
-    print('вы нириально багат!')
-    print("""
-
-Чтобы выйти в главное меню нажмите Enter:
-    """)
-    input()
-
-def pay():
-    api = QApi(token=token, phone=phone)
-    print('ваш баланс')
-    print(api.balance)
-    pay=input('Номер получателя: ')
-    sym=input('Сумма перевода: ')
-    com=input('Коментарий к переводу: ')
-    api.pay(account=pay, amount=sym, comment=com)
-    print(api.balance)
-    print("""
-
-Чтобы выйти в главное меню нажмите Enter:
-    """)
-    input()
-
-def main():
-    os.system(clear)
-    print(intro)
-    print(menu)
-    num_menu = input("[+] > ")
-    if num_menu == "1":
-        balans()
-    if num_menu == "2":
-        pay()
     else:
-        main()
-main()
+        with open("proxy.txt", "x"):
+            pass
+
+        print("Заполните файл proxy.txt IP адресами прокси-серверов")
+        print("Например:")
+        print()
+        print("http://1.3.45.66.22:8080")
+        print("http://154.46.114:80")
+
+        sys.exit()
+
+else:
+    proxies = ["localhost"]
+
+misc.print_banner( len(accounts) )
+
+if not accounts:
+    token = input("Введите токен от QIWI: ")
+    number = input("Введите логин от QIWI: ")
+
+    db.add_account(number, token)
+    misc.print_banner( len(accounts) )
+
+else:
+    if len(accounts) == 1:
+        qiwi = QiwiWrapper( accounts[0][1], accounts[0][0], proxy={"http": random.choice(proxies)} )
+    else:
+        for index, account in enumerate(accounts):
+            print(f"{index + 1}. {account[0]}")
+
+        print()
+
+        while True:
+            acc = input("Выберите аккаунт: ")
+
+            if acc.isdigit():
+                acc = int(acc)
+                acc -= 1
+
+                qiwi = QiwiWrapper(accounts[acc][1], account[acc][0], proxy={"http": random.choice(proxies)})
+                misc.print_banner( len(accounts) )
+                break
+            else:
+                print(f"{acc} - разве это похоже на число?")
+
+while True:
+    ch = misc.menu( len(accounts) )
+
+    if ch.isdigit():
+        ch = int(ch)
+
+        if ch == 1:
+            print(f"Баланс этого аккаунта: {qiwi.api.balance[0]}₽")
+
+        if ch == 2:
+            print(f"Баланс: {qiwi.api.balance[0]}₽")
+
+            number = input('Номер кошелька: ')
+            money = input('Сумма перевода: ')
+            comment = input('Коментарий к переводу (нажмите ENTER, чтобы пропустить): ')
+
+            qiwi.api.pay(account=number, amount=money, comment=comment)
+            print('Перевод выполнен!')
+
+        if ch == 3:
+            token = input("Введите токен от QIWI: ")
+            number = input("Введите логин от QIWI: ")
+
+            db.add_account(number, token)
+
+            misc.print_banner( len(accounts) )
+            print("Аккаунт добавлен")
+
+        if ch == 4:
+            number = input("Введите логин от QIWI: ")
+            db.delete_account(number)
+
+            misc.print_banner( len(accounts) )
+            print("Аккаунт удалён")
+
+        if ch == 5:
+            print(misc.authors)
+
+        print()
+    else:
+        misc.print_banner( len(accounts) )
