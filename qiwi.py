@@ -47,29 +47,30 @@ if not accounts:
     number = input("Введите логин от QIWI: ")
 
     db.add_account(number, token)
+    accounts = db.get_accounts()
+    
     misc.print_banner( len(accounts) )
 
+if len(accounts) == 1:
+    qiwi = QiwiWrapper( accounts[0][1], accounts[0][0], proxy={"http": random.choice(proxies)} )
 else:
-    if len(accounts) == 1:
-        qiwi = QiwiWrapper( accounts[0][1], accounts[0][0], proxy={"http": random.choice(proxies)} )
-    else:
-        for index, account in enumerate(accounts):
-            print(f"{index + 1}. {account[0]}")
+    for index, account in enumerate(accounts):
+        print(f"{index + 1}. {account[0]}")
 
-        print()
+    print()
 
-        while True:
-            acc = input("Выберите аккаунт: ")
+    while True:
+        acc = input("Выберите аккаунт: ")
 
-            if acc.isdigit():
-                acc = int(acc)
-                acc -= 1
+        if acc.isdigit():
+            acc = int(acc)
+            acc -= 1
 
-                qiwi = QiwiWrapper(accounts[acc][1], account[acc][0], proxy={"http": random.choice(proxies)})
-                misc.print_banner( len(accounts) )
-                break
-            else:
-                print(f"{acc} - разве это похоже на число?")
+            qiwi = QiwiWrapper(accounts[acc][1], account[acc][0], proxy={"http": random.choice(proxies)})
+            misc.print_banner( len(accounts) )
+            break
+        else:
+            print(f"{acc} - разве это похоже на число?")
 
 while True:
     ch = misc.menu( len(accounts) )
