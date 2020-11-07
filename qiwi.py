@@ -48,7 +48,7 @@ if not accounts:
  
     if token or number:
       print('')
-      print("Вы не ввели Токен или Логин вашего кошелька!\nНажмите Enter дл>
+      print("Вы не ввели Токен или Логин вашего кошелька!\nНажмите Enter для выхода...")
       input('')
  
       sys.exit()
