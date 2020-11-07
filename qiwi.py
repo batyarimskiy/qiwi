@@ -45,6 +45,20 @@ misc.print_banner( len(accounts) )
 if not accounts:
     token = input("Введите токен от QIWI: ")
     number = input("Введите логин от QIWI: ")
+ 
+    if token or number:
+      print('')
+      print("Вы не ввели Токен или Логин вашего кошелька!\nНажмите Enter дл>
+      input('')
+ 
+      sys.exit()
+ 
+    else:
+      print('')
+      print("Вы вообще ничего не ввели!\nНажмите Enter для выхода...")
+      input('')
+ 
+      sys.exit()
 
     db.add_account(number, token)
     accounts = db.get_accounts()
