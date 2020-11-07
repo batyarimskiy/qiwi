@@ -1,2 +1,4 @@
 accounts.db
 proxy.txt
+
+/modules/__pycache__/*.pyc

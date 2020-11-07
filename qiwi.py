@@ -1,6 +1,11 @@
 import os
 import sys
 import random
+import time
+
+from termcolor import colored
+from SimpleQIWI.Errors import QIWIAPIError
+from progress.bar import IncrementalBar
 
 from modules import misc
 from modules.qiwi_wrapper import QiwiWrapper
@@ -38,36 +43,33 @@ if proxy == "y":
         sys.exit()
 
 else:
-    proxies = ["localhost"]
+    proxies = ["http://localhost"]
 
 misc.print_banner( len(accounts) )
 
 if not accounts:
     token = input("Введите токен от QIWI: ")
     number = input("Введите логин от QIWI: ")
- 
-    if token or number:
-      print('')
-      print("Вы не ввели Токен или Логин вашего кошелька!\nНажмите Enter для выхода...")
-      input('')
- 
-      sys.exit()
- 
-    else:
-      print('')
-      print("Вы вообще ничего не ввели!\nНажмите Enter для выхода...")
-      input('')
- 
-      sys.exit()
 
-    db.add_account(number, token)
-    accounts = db.get_accounts()
-    
-    misc.print_banner( len(accounts) )
+    qiwi_ = QiwiWrapper(token, number, proxy={"http": random.choice(proxies)})
+
+    try:
+        _ = qiwi_.api.balance
+        db.add_account(number, token)
+
+        accounts = db.get_accounts()
+        misc.print_banner( len(accounts) )
+        print("Аккаунт добавлен")
+
+    except:
+        print()
+        print("Токен невалидный")
+        sys.exit()
 
 if len(accounts) == 1:
     qiwi = QiwiWrapper( accounts[0][1], accounts[0][0], proxy={"http": random.choice(proxies)} )
-else:
+
+elif len(accounts) > 1:
     for index, account in enumerate(accounts):
         print(f"{index + 1}. {account[0]}")
 
@@ -87,43 +89,104 @@ else:
             print(f"{acc} - разве это похоже на число?")
 
 while True:
-    ch = misc.menu( len(accounts) )
+    try:
+        ch = misc.menu( len(accounts) )
+    
+        if ch.isdigit():
+            ch = int(ch)
 
-    if ch.isdigit():
-        ch = int(ch)
+            if ch == 1:
+                token = input("Введите токен от QIWI: ")
+                number = input("Введите логин от QIWI: ")
 
-        if ch == 1:
-            print(f"Баланс этого аккаунта: {qiwi.api.balance[0]}₽")
+                qiwi_ = QiwiWrapper(token, number, {"http": random.choice(proxies)})
 
-        if ch == 2:
-            print(f"Баланс: {qiwi.api.balance[0]}₽")
+                try:
+                    _ = qiwi_.api.balance
+                    db.add_account(number, token)
 
-            number = input('Номер кошелька: ')
-            money = input('Сумма перевода: ')
-            comment = input('Коментарий к переводу (нажмите ENTER, чтобы пропустить): ')
+                    accounts = db.get_accounts()
+                    misc.print_banner( len(accounts) )
+                    print("Аккаунт добавлен")
+                except:
+                    print()
+                    print("Токен невалидный")
+    
+            if ch == 2:
+                number = input("Введите логин от QIWI: ")
+                db.delete_account(number)
 
-            qiwi.api.pay(account=number, amount=money, comment=comment)
-            print('Перевод выполнен!')
+                accounts = db.get_accounts()
+                misc.print_banner( len(accounts) )
+                print("Аккаунт удалён")
 
-        if ch == 3:
-            token = input("Введите токен от QIWI: ")
-            number = input("Введите логин от QIWI: ")
+            if ch == 3:
+                print(misc.authors)
 
-            db.add_account(number, token)
+            if ch == 4:
+                print(f"Баланс этого аккаунта: {qiwi.api.balance[0]}₽")
 
+            if ch == 5:
+                print(f"Баланс: {qiwi.api.balance[0]}₽")
+                print()
+
+                number = input('Номер кошелька: ')
+                money = input('Сумма перевода: ')
+
+                while not money.isdigit():
+                    print("Ты будешь переводить буквы?")
+                    money = input('Сумма перевода: ')
+
+                comment = input('Коментарий к переводу (нажмите ENTER, чтобы пропустить): ')
+
+                if float(money) <= qiwi.api.balance[0]:
+                    qiwi.api.pay(
+                        account=number,
+                        amount=money,
+                        comment=comment
+                    )
+                    print('Перевод выполнен')
+                else:
+                    print()
+                    print("Недостаточно средств")
+                    input("Нажмите ENTER, чтобы продолжить")
+                    misc.print_banner(len(accounts))
+
+            if ch == 6:
+                print(f"Ваш баланс: {qiwi.api.balance[0]}₽")
+                print()
+                print(misc.ban_account_desc)
+
+                number = input('Номер кошелька: ')
+                pays = input('Количество переводов (будет переведен один рубль): ')
+
+                while not pays.isdigit():
+                    print("Количество нужно указывать в цифрах")
+                    pays = input('Количество переводов (переводы будут по рублю): ')
+
+                comment = input('Коментарий к переводу (нажмите ENTER, чтобы пропустить): ')
+                print()
+
+                if float(pays) > qiwi.api.balance[0]:
+                    print("У вас не хватает денег")
+                    input("Нажмите ENTER, чтобы продолжить")
+                    misc.print_banner(len(accounts))
+
+                bar = IncrementalBar( colored("Отправка платежей", "cyan"), max=pays)
+
+                for _ in range(pays):
+                    qiwi.api.pay(
+                        account=number,
+                        amount=1,
+                        comment=comment
+                    )
+
+                    time.sleep( 0.34 )
+                    bar.next()
+
+            print()
+        else:
             misc.print_banner( len(accounts) )
-            print("Аккаунт добавлен")
 
-        if ch == 4:
-            number = input("Введите логин от QIWI: ")
-            db.delete_account(number)
-
-            misc.print_banner( len(accounts) )
-            print("Аккаунт удалён")
-
-        if ch == 5:
-            print(misc.authors)
-
-        print()
-    else:
-        misc.print_banner( len(accounts) )
+    except KeyboardInterrupt:
+        break
