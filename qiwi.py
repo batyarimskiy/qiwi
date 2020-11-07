@@ -168,21 +168,23 @@ while True:
                 print()
 
                 if float(pays) > qiwi.api.balance[0]:
-                    print("У вас не хватает денег")
+                    print()
+                    print("Недостаточно средств")
                     input("Нажмите ENTER, чтобы продолжить")
                     misc.print_banner(len(accounts))
 
-                bar = IncrementalBar( colored("Отправка платежей", "cyan"), max=int(pays))
+                else:
+                    bar = IncrementalBar( colored("Отправка платежей", "cyan"), max=int(pays))
 
-                for _ in range( int(pays) ):
-                    qiwi.api.pay(
-                        account=number,
-                        amount=1,
-                        comment=comment
-                    )
+                    for _ in range( int(pays) ):
+                        qiwi.api.pay(
+                            account=number,
+                            amount=1,
+                            comment=comment
+                        )
 
-                    time.sleep( 0.34 )
-                    bar.next()
+                        time.sleep( 0.34 )
+                        bar.next()
 
             print()
         else:
