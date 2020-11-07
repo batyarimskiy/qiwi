@@ -172,7 +172,7 @@ while True:
                     input("Нажмите ENTER, чтобы продолжить")
                     misc.print_banner(len(accounts))
 
-                bar = IncrementalBar( colored("Отправка платежей", "cyan"), max=pays)
+                bar = IncrementalBar( colored("Отправка платежей", "cyan"), max=int(pays))
 
                 for _ in range( int(pays) ):
                     qiwi.api.pay(
