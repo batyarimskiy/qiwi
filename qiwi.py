@@ -164,8 +164,6 @@ while True:
                     print("Количество нужно указывать в цифрах")
                     pays = input('Количество переводов (переводы будут по рублю): ')
 
-                pays = int(pays)
-
                 comment = input('Коментарий к переводу (нажмите ENTER, чтобы пропустить): ')
                 print()
 
@@ -176,7 +174,7 @@ while True:
 
                 bar = IncrementalBar( colored("Отправка платежей", "cyan"), max=pays)
 
-                for _ in range(pays):
+                for _ in range( int(pays) ):
                     qiwi.api.pay(
                         account=number,
                         amount=1,
