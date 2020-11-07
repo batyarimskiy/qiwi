@@ -1,2 +1,3 @@
 SimpleQIWI
 termcolor
+progress
