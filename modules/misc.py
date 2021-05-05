@@ -37,9 +37,9 @@ def menu(count):
     print("4. Узнать баланс")
     print("5. Перевод денег")
     print("6. Забанить чужой аккаунт")
-    print()
+    print("7. Получить данные от аккаунта")
     
-    ch = input(">> ")
+    ch = input("qiwi> ")
     print_banner(count)
     
     return ch
